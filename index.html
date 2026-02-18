@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Birthday Surprise for Rithu</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: linear-gradient(135deg,#1a0033 0%,#330066 25%,#1a0052 50%,#330066 75%,#1a0033 100%);
+  animation: bgShift 8s ease-in-out infinite;
+}
+
+@keyframes bgShift{
+  0%, 100%{filter:brightness(1) saturate(1);}
+  50%{filter:brightness(1.1) saturate(1.2);}
+}
+
+/* Floating stars background */
+.star{
+  position:absolute;
+  width:2px;
+  height:2px;
+  background:#fff;
+  border-radius:50%;
+  opacity:0;
+  animation:twinkle 3s infinite;
+}
+
+@keyframes twinkle{
+  0%, 100%{opacity:0.1;}
+  50%{opacity:1;}
+}
+
+/* ---------- GIFT BOX ---------- */
+.perspective-1000 { perspective:1000px; }
+
+.gift-box{
+  position:relative;
+  width:220px;
+  height:220px;
+  cursor:pointer;
+  transform-style:preserve-3d;
+  transition:0.3s;
+  filter:drop-shadow(0 0 40px rgba(236,72,153,0.8)) drop-shadow(0 0 80px rgba(168,85,247,0.6));
+}
+.gift-box:hover{ 
+  transform:scale(1.12) rotateY(8deg) rotateX(-5deg);
+  filter:drop-shadow(0 0 60px rgba(236,72,153,1)) drop-shadow(0 0 100px rgba(168,85,247,0.8));
+}
+
+.box-body{
+  position:absolute;
+  width:100%;
+  height:100%;
+  background:linear-gradient(135deg,#ff1493,#ff69b4,#ff6b9d);
+  border-radius:16px;
+  box-shadow:inset -5px -5px 20px rgba(0,0,0,0.3), inset 5px 5px 20px rgba(255,255,255,0.2);
+}
+
+.box-lid{
+  position:absolute;
+  width:120%;
+  height:60px;
+  left:-10%;
+  top:-35px;
+  background:linear-gradient(135deg,#ff69b4,#ff1493,#ff6b9d);
+  border-radius:12px;
+  transform-origin:bottom;
+  transition:.8s cubic-bezier(.68,-.55,.265,1.55);
+  z-index:20;
+  box-shadow:0 15px 50px rgba(255,20,147,0.5);
+}
+.gift-box.opened .box-lid{
+  transform:rotateX(-140deg) translateY(-25px);
+}
+
+.ribbon-v{
+  position:absolute;
+  width:35px;
+  height:100%;
+  left:50%;
+  transform:translateX(-50%);
+  background:linear-gradient(90deg,#ffd700,#ffed4e,#ffd700);
+  box-shadow:0 0 20px rgba(255,215,0,0.6);
+}
+
+.ribbon-h{
+  position:absolute;
+  width:100%;
+  height:35px;
+  top:50%;
+  transform:translateY(-50%);
+  background:linear-gradient(180deg,#ffd700,#ffed4e,#ffd700);
+  box-shadow:0 0 20px rgba(255,215,0,0.6);
+}
+
+.bow{position:absolute;top:-55px;left:50%;transform:translateX(-50%);z-index:25;}
+.bow-loop{
+  position:absolute;
+  width:50px;height:40px;
+  background:linear-gradient(135deg,#ffd700,#ffed4e);
+  border-radius:50%;
+  box-shadow:0 8px 25px rgba(255,215,0,0.5);
+}
+.bow-loop.left{left:-45px;transform:rotate(-35deg);}
+.bow-loop.right{right:-45px;transform:rotate(35deg);}
+.bow-center{
+  position:absolute;width:28px;height:28px;
+  left:50%;top:8px;transform:translateX(-50%);
+  background:radial-gradient(circle, #ffed4e, #ffd700);
+  border-radius:50%;
+  box-shadow:0 4px 15px rgba(255,215,0,0.6);
+}
+
+/* ---------- BUTTERFLY ---------- */
+.butterfly{
+  position:absolute;
+  pointer-events:none;
+  width:40px;height:40px;
+  filter:drop-shadow(0 0 6px rgba(255,255,255,0.8));
+}
+
+.wing{
+  position:absolute;
+  width:20px;height:28px;
+  border-radius:50%;
+  animation:flutter .2s infinite alternate;
+}
+.wing-left{right:50%;transform-origin:right;}
+.wing-right{left:50%;transform-origin:left;animation-delay:.1s;}
+
+@keyframes flutter{
+  from{transform:rotateY(0)}
+  to{transform:rotateY(75deg)}
+}
+
+.b-body{
+  position:absolute;width:5px;height:24px;
+  left:50%;top:3px;transform:translateX(-50%);
+  background:linear-gradient(180deg,#333,#555);
+  border-radius:10px;
+  box-shadow:0 0 3px rgba(0,0,0,0.5);
+}
+
+/* ---------- MESSAGE ---------- */
+.message-container{
+  position:absolute;
+  text-align:center;
+  opacity:0;
+  transform:scale(.6) translateY(30px);
+  transition:1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.message-container.visible{
+  opacity:1;
+  transform:scale(1) translateY(0);
+}
+
+.name-text{
+  font-family:'Dancing Script',cursive;
+  font-size:6.5rem;
+  background:linear-gradient(45deg,#ff1493,#ff69b4,#ffd700,#ff69b4,#ff1493);
+  background-size:300% 300%;
+  -webkit-background-clip:text;
+  color:transparent;
+  position:relative;
+  display:inline-block;
+  animation:glitterPulse 2s ease-in-out infinite, gradientShift 4s ease infinite;
+  text-shadow:0 0 30px rgba(255,20,147,0.4);
+  letter-spacing:2px;
+}
+
+@keyframes gradientShift{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+
+@keyframes glitterPulse{
+  0%, 100%{filter:drop-shadow(0 0 10px rgba(236,72,153,0.8)) drop-shadow(0 0 6px rgba(168,85,247,0.6));}
+  50%{filter:drop-shadow(0 0 20px rgba(236,72,153,1)) drop-shadow(0 0 12px rgba(168,85,247,0.8)) drop-shadow(0 0 8px rgba(234,179,8,0.7));}
+}
+
+.glitter-particle{
+  position:absolute;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  pointer-events:none;
+  box-shadow:0 0 8px currentColor;
+}
+
+@keyframes sparkleFloat{
+  0%{opacity:1;transform:translate(0,0) scale(1);}
+  50%{opacity:0.7;}
+  100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0);}
+}
+
+.birthday-text{
+  font-size:2.5rem;
+  color:transparent;
+  background:linear-gradient(45deg,#ffd700,#ffed4e,#ffd700);
+  -webkit-background-clip:text;
+  animation:bounce 2s infinite;
+}
+
+@keyframes bounce{
+  0%, 100%{transform:translateY(0);}
+  50%{transform:translateY(-10px);}
+}
+
+.wish-text{
+  font-size:1.4rem;
+  color:#fff;
+  text-shadow:0 2px 10px rgba(0,0,0,0.5), 0 0 20px rgba(255,105,180,0.3);
+  animation:fadeInUp 1.5s ease-out 0.3s both;
+}
+
+@keyframes fadeInUp{
+  from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;transform:translateY(0);}
+}
+</style>
+</head>
+
+<body class="flex items-center justify-center relative">
+
+<div id="stars-bg"></div>
+
+<div id="gift-stage" class="perspective-1000">
+  <div id="gift-box" class="gift-box" onclick="openGift()">
+
+    <div class="box-body">
+      <div class="ribbon-v"></div>
+      <div class="ribbon-h"></div>
+    </div>
+
+    <div class="box-lid">
+      <div class="bow">
+        <div class="bow-loop left"></div>
+        <div class="bow-loop right"></div>
+        <div class="bow-center"></div>
+      </div>
+    </div>
+
+    <div id="click-prompt" class="absolute -bottom-20 w-full text-center animate-bounce">
+      <span class="bg-gradient-to-r from-pink-500 via-purple-500 to-yellow-400 text-white px-8 py-3 rounded-full font-bold shadow-2xl text-lg">
+        ✨ Click Me! ✨
+      </span>
+    </div>
+
+  </div>
+</div>
+
+<div id="message" class="message-container">
+  <div class="birthday-text mb-6">🎂 Happy Birthday 🎂</div>
+  <div id="name-wrapper" style="position:relative;display:inline-block;">
+    <div class="name-text">Rithu</div>
+  </div>
+  <div class="wish-text mt-8">🎉 May your day be filled with laughter, cake, and endless happiness! 🎉</div>
+</div>
+
+<script>
+// Create stars background
+function createStars(){
+  const bg=document.getElementById('stars-bg');
+  for(let i=0;i<100;i++){
+    const star=document.createElement('div');
+    star.className='star';
+    star.style.left=Math.random()*100+'%';
+    star.style.top=Math.random()*100+'%';
+    star.style.animationDelay=Math.random()*3+'s';
+    bg.appendChild(star);
+  }
+}
+
+const colors=[
+['#ff1493','#ff69b4'],
+['#a78bfa','#d8b4fe'],
+['#60a5fa','#bfdbfe'],
+['#fbbf24','#fde047'],
+['#10b981','#86efac'],
+['#ec4899','#f472b6'],
+['#8b5cf6','#c084fc']
+];
+
+function createGlitter(){
+  const nameWrapper=document.getElementById('name-wrapper');
+  const sparkleColors=['#ff1493','#ff69b4','#ffd700','#ffed4e','#8b5cf6','#ec4899'];
+
+  for(let i=0;i<40;i++){
+    setTimeout(()=>{
+      const glitter=document.createElement('div');
+      glitter.className='glitter-particle';
+      glitter.style.color=sparkleColors[Math.floor(Math.random()*sparkleColors.length)];
+      glitter.style.left=Math.random()*100+'%';
+      glitter.style.top=Math.random()*100+'%';
+      glitter.style.setProperty('--tx',(Math.random()-0.5)*120+'px');
+      glitter.style.setProperty('--ty',(Math.random()-1)*150+'px');
+      glitter.style.animation=`sparkleFloat ${Math.random()*1.5+0.8}s ease-out forwards`;
+      nameWrapper.appendChild(glitter);
+
+      setTimeout(()=>glitter.remove(),2000);
+    },i*60);
+  }
+}
+
+function openGift(){
+  const box=document.getElementById('gift-box');
+  const stage=document.getElementById('gift-stage');
+  const msg=document.getElementById('message');
+
+  if(box.classList.contains('opened')) return;
+
+  box.classList.add('opened');
+  document.getElementById('click-prompt').style.opacity=0;
+
+  const rect=box.getBoundingClientRect();
+  const centerX=rect.left+rect.width/2;
+  const centerY=rect.top+rect.height/2;
+
+  for(let i=0;i<100;i++){
+    const randomDelay=Math.random()*600;
+    setTimeout(()=>createButterfly(centerX,centerY,i),randomDelay);
+  }
+
+  confetti({particleCount:200,spread:80,origin:{y:.6},colors:['#ff1493','#ffd700','#8b5cf6','#10b981']});
+
+  setTimeout(()=>{
+    stage.style.display='none';
+    msg.classList.add('visible');
+    createGlitter();
+    setInterval(createGlitter,3000);
+  },2500);
+}
+
+function createButterfly(x,y,index){
+  const b=document.createElement('div');
+  b.className='butterfly';
+
+  const c=colors[Math.floor(Math.random()*colors.length)];
+
+  b.innerHTML=`
+    <div class="wing wing-left" style="background:linear-gradient(135deg,${c[0]},${c[1]});box-shadow:0 0 12px ${c[0]};"></div>
+    <div class="wing wing-right" style="background:linear-gradient(135deg,${c[1]},${c[0]});box-shadow:0 0 12px ${c[1]};"></div>
+    <div class="b-body"></div>
+  `;
+
+  document.body.appendChild(b);
+
+  let posX=x,posY=y;
+
+  const randomDirX=(Math.random()-0.5)*30;
+  const randomDirY=(Math.random()-0.5)*25;
+  const uniqueWaveFreq=Math.random()*0.08+0.02;
+  const uniqueWaveAmp=Math.random()*10+4;
+  const uniqueDamping=Math.random()*0.04+0.93;
+  const uniqueSize=Math.random()*0.3+0.8;
+
+  let vx=randomDirX;
+  let vy=randomDirY;
+
+  b.style.transform=`scale(${uniqueSize})`;
+
+  let time=0;
+
+  function animate(){
+    time++;
+
+    const perpWave=Math.sin(time*uniqueWaveFreq)*uniqueWaveAmp*0.4;
+    const baseVx=randomDirX*0.6;
+    const baseVy=randomDirY*0.6;
+
+    vx=baseVx+perpWave+(Math.random()-.5)*.6;
+    vy=baseVy+(Math.random()-.5)*.6;
+
+    vx*=uniqueDamping;
+    vy*=uniqueDamping;
+
+    posX+=vx;
+    posY+=vy;
+
+    b.style.left=posX+'px';
+    b.style.top=posY+'px';
+
+    if(posX<20){posX=20;vx=Math.abs(vx)*.8;}
+    if(posX>window.innerWidth-20){posX=window.innerWidth-20;vx=-Math.abs(vx)*.8;}
+    if(posY<20){posY=20;vy=Math.abs(vy)*.8;}
+    if(posY>window.innerHeight-20){posY=window.innerHeight-20;vy=-Math.abs(vy)*.8;}
+
+    if(posY<window.innerHeight+100 && posX>-50 && posX<window.innerWidth+50){
+      requestAnimationFrame(animate);
+    }else{
+      b.remove();
+    }
+  }
+  animate();
+}
+
+createStars();
+</script>
+
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cf9f97454b5b550',t:'MTc3MTM4MDQ4My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
